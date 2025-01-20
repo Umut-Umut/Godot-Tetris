@@ -1,0 +1,42 @@
+; Engine configuration file.
+; It's best edited using the editor UI and not directly,
+; since the parameters that go here are not all obvious.
+;
+; Format:
+;   [section] ; section goes between []
+;   param=value ; assign values to parameters
+
+config_version=4
+
+_global_script_classes=[ {
+"base": "TileMap",
+"class": "TShape",
+"language": "GDScript",
+"path": "res://Shape.gd"
+} ]
+_global_script_class_icons={
+"TShape": ""
+}
+
+[application]
+
+config/name="Tetris"
+run/main_scene="res://Board.tscn"
+config/icon="res://icon.png"
+
+[display]
+
+window/size/width=650
+window/size/height=705
+
+[gui]
+
+common/drop_mouse_on_gui_input_disabled=true
+
+[physics]
+
+common/enable_pause_aware_picking=true
+
+[rendering]
+
+environment/default_environment="res://default_env.tres"

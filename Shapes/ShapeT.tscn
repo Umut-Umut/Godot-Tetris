@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=2]
+
+[ext_resource path="res://Shape.tscn" type="PackedScene" id=1]
+
+[node name="ShapeT" instance=ExtResource( 1 )]
+tile_data = PoolIntArray( 1, 0, 3, 65536, 0, 3, 65537, 0, 3, 65538, 0, 3 )
