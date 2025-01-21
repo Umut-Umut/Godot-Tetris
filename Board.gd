@@ -1,6 +1,8 @@
 extends TileMap
 
 
+# Collision Test elden gecirilecek.
+
 const WIDTH  = 10
 const HEIGHT = 20
 
@@ -94,7 +96,7 @@ func shape_move(shape : TShape, direction : Vector2):
 	shape_direction = Vector2.ZERO
 
 
-func shape_is_collide(shape : TShape, new_pos : Vector2, direction : Vector2):
+func shape_is_collide(shape : TShape, new_pos : Vector2, direction : Vector2, is_rotated : bool = false):
 	if not shape_current:
 		return
 	
@@ -103,7 +105,9 @@ func shape_is_collide(shape : TShape, new_pos : Vector2, direction : Vector2):
 	var shape_cells_local = shape_current.get_used_cells()
 	for cell in shape_cells_local:
 		var collision_cell : Vector2 = new_pos + cell
-		if not (cell + direction) in shape_cells_local:
+		# Kendi hucreleriyle cakisma testi
+		# Eger sekil dondurulmus ise kendi hucrelerini kontrol edecek.
+		if is_rotated or not (cell + direction) in shape_cells_local:
 			if get_cellv(collision_cell) >= 0:
 				is_collision = true
 	
@@ -119,7 +123,13 @@ func shape_set_position(shape : TShape, new_pos : Vector2):
 
 
 func shape_rotate():
+	# sekli cevir
 	shape_current.rotate_shape(shape_index)
+	
+	# cevrilmis seklin hucrelerinde cakisma varsa
+	# eski haline dondur
+	if shape_is_collide(shape_current, shape_position, Vector2.ZERO, true):
+		shape_current.rotate_reverse_shape(shape_index)
 
 
 func _on_ShapeFall_timeout():

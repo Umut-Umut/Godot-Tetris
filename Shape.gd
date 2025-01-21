@@ -41,6 +41,18 @@ func set_shape(shape : int):
 		set_cellv(Vector2(vector[0], vector[1]), 0, false, false, false, c)
 
 
+func rotate_reverse_shape(shape : int):
+	var dshape = shapes[shape]
+	var cstate = dshape["state"]
+	if cstate > 0:
+		cstate -= 1
+	else:
+		cstate = dshape["rotations"] - 1
+	
+	dshape["state"] = cstate
+	set_shape(shape)
+
+
 func rotate_shape(shape : int):
 	var shape_data = shapes[shape]
 	
@@ -48,6 +60,6 @@ func rotate_shape(shape : int):
 		shape_data["state"] += 1
 	else:
 		shape_data["state"] = 0
-		
+	
 	set_shape(shape)
 	
