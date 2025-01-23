@@ -16,13 +16,14 @@ enum TColor {
 enum SHAPE {
 	C,
 	L,
+	I,
 	#S,
 	#T
 }
 
 
 var shapes : Dictionary = {
-	 SHAPE.C : {"color" : 3, "state" : 0, "rotations" : 1, "patterns" : [
+	 SHAPE.C : {"color" : 1, "state" : 0, "rotations" : 1, "patterns" : [
 		[[0, 0], [0, 1], [1, 0], [1, 1]],
 		]},
 	SHAPE.L : {"color" : 3, "state" : 0, "rotations" : 3, "patterns" : [
@@ -30,6 +31,10 @@ var shapes : Dictionary = {
 		[[0, 2], [1, 2], [2, 2], [2, 1]],
 		[[2, 0], [2, 1], [2, 2], [1, 2]]
 		]},
+	SHAPE.I : {"color" : 2, "state" : 0, "rotations" : 2, "patterns" : [
+		[[0, 0], [0, 1], [0, 2], [0, 3]],
+		[[0, 0], [1, 0], [2, 0], [3, 0]]
+	]}
 }
 
 

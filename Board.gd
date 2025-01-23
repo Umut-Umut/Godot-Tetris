@@ -48,13 +48,6 @@ func _input(event):
 
 
 func shape_spawn():
-	if shape_current:
-		for cell in shape_current.get_used_cells():
-			set_cellv(cell + shape_position, 0)
-		
-		shape_current.queue_free()
-	
-	
 	# secilenlerin hepsi ayni cunku ready icinde oyle tanimladim.
 	shape_index = get_random_shape()
 	
@@ -73,20 +66,41 @@ func get_random_shape():
 	return randi() % TShape.SHAPE.size()
 
 
-func shape_commit(shape : TShape):
-	var shape_position = Vector2(5, 5)
+# Sekli oyun tahtasina yerlestirdikten sonra
+# hangi satirlarda islem yapildigini dondurur.
+func shape_commit(shape : TShape) -> PoolIntArray:
 	var shape_used_cells = shape.get_used_cells()
+	var lines : PoolIntArray = []
 	
 	for cell_local in shape_used_cells:
-		var cell_global = cell_local + shape_position
+		var cell_global : Vector2 = cell_local + shape_position
+		
+		if not cell_global.y in lines:
+			lines.append(cell_global.y)
 		
 		set_cellv(cell_global, 0)
+	
+	shape_current.queue_free()
+	
+	return lines
+
+
+func check_lines(lines : PoolIntArray):
+	for l in lines:
+		for i in range(1, WIDTH + 1):
+			if get_cellv(Vector2(i, l)) < 0:
+				break
+			
+			if i == WIDTH:
+				prints("Satir dolu", l)
 
 
 func shape_move(shape : TShape, direction : Vector2):
 	var new_pos = shape_position + direction
 	if shape_is_collide(shape_current, new_pos, direction):
 		if direction == Vector2.DOWN:
+			var lines : PoolIntArray = shape_commit(shape_current)
+			check_lines(lines)
 			shape_spawn()
 	else:
 		shape_set_position(shape_current, new_pos)
