@@ -23,6 +23,8 @@ var shape_spawn_position : Vector2 = Vector2(5, 1)
 
 
 func _ready():
+	randomize()
+	
 	shape_spawn()
 
 
@@ -85,14 +87,40 @@ func shape_commit(shape : TShape) -> PoolIntArray:
 	return lines
 
 
-func check_lines(lines : PoolIntArray):
+func pop_lines(lines : PoolIntArray):
+	lines.sort()
+	
+	var counter_full_lines : int = 0
+	var is_full_line : bool = false
+	
+	for i in range(HEIGHT, 0, -1):
+		if i in lines:
+			counter_full_lines += 1
+			is_full_line = true
+		
+		for j in range(1, WIDTH + 1):
+			if is_full_line:
+				set_cell(j, i, -1)
+			
+			elif get_cell(j, i) > -1:
+				set_cell(j, i, -1)
+				set_cell(j, i+counter_full_lines, 0)
+		
+		is_full_line = false
+
+
+func check_lines(lines : PoolIntArray) -> PoolIntArray:
+	var lines_full : PoolIntArray = []
+	
 	for l in lines:
 		for i in range(1, WIDTH + 1):
 			if get_cellv(Vector2(i, l)) < 0:
 				break
 			
 			if i == WIDTH:
-				prints("Satir dolu", l)
+				lines_full.append(l)
+	
+	return lines_full
 
 
 func shape_move(shape : TShape, direction : Vector2):
@@ -100,7 +128,10 @@ func shape_move(shape : TShape, direction : Vector2):
 	if shape_is_collide(shape_current, new_pos, direction):
 		if direction == Vector2.DOWN:
 			var lines : PoolIntArray = shape_commit(shape_current)
-			check_lines(lines)
+			lines = check_lines(lines)
+			if not lines.empty():
+				pop_lines(lines)
+			
 			shape_spawn()
 	else:
 		shape_set_position(shape_current, new_pos)
