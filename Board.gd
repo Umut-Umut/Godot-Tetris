@@ -9,7 +9,9 @@ onready var timer_fall = $ShapeFall
 
 # SHAPES
 onready var shape_scene = preload("res://Shape.tscn")
+#onready var denek = $Denek
 
+onready var shape_scenes = ["res://Shapes/ShapeI.tscn", "res://Shapes/ShapeJ.tscn", "res://Shapes/ShapeL.tscn", "res://Shapes/ShapeO.tscn", "res://Shapes/ShapeS.tscn", "res://Shapes/ShapeT.tscn", "res://Shapes/ShapeZ.tscn"]
 
 var shapes : Array = []
 var shape_current : TShape
@@ -24,6 +26,9 @@ var shape_spawn_position : Vector2 = Vector2(5, 1)
 
 func _ready():
 	randomize()
+	
+	for i in range(shape_scenes.size()):
+		shape_scenes[i] = load(shape_scenes[i])
 	
 	shape_spawn()
 
@@ -42,6 +47,9 @@ func _input(event):
 					shape_move(shape_current, shape_direction)
 				KEY_UP:
 					shape_rotate()
+				KEY_K:
+					pass
+#					denek_rotate()
 		
 		else: # released
 			match event.scancode:
@@ -53,10 +61,11 @@ func shape_spawn():
 	# secilenlerin hepsi ayni cunku ready icinde oyle tanimladim.
 	shape_index = get_random_shape()
 	
-	shape_current = shape_scene.instance()
+#	shape_current = shape_scene.instance()
+	shape_current = shape_scenes[shape_index].instance()
 	
 	# set_shape burada cagirilacak.
-	shape_current.set_shape(shape_index)
+#	shape_current.set_shape(shape_index)
 	
 	add_child(shape_current)
 	
@@ -65,7 +74,8 @@ func shape_spawn():
 
 
 func get_random_shape():
-	return randi() % TShape.SHAPE.size()
+	return randi() % shape_scenes.size()
+#	return randi() % TShape.SHAPE.size()
 
 
 # Sekli oyun tahtasina yerlestirdikten sonra
@@ -167,12 +177,13 @@ func shape_set_position(shape : TShape, new_pos : Vector2):
 
 func shape_rotate():
 	# sekli cevir
-	shape_current.rotate_shape(shape_index)
+#	shape_current.rotate_shape(shape_index)
+	shape_current.rotate_shape()
 	
 	# cevrilmis seklin hucrelerinde cakisma varsa
 	# eski haline dondur
-	if shape_is_collide(shape_current, shape_position, Vector2.ZERO, true):
-		shape_current.rotate_reverse_shape(shape_index)
+#	if shape_is_collide(shape_current, shape_position, Vector2.ZERO, true):
+#		shape_current.rotate_reverse_shape(shape_index)
 
 
 func _on_ShapeFall_timeout():

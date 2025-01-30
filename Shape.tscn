@@ -30,5 +30,4 @@
 tile_set = SubResource( 1 )
 cell_size = Vector2( 32, 32 )
 format = 1
-tile_data = PoolIntArray( 0, 0, 4, 2, 0, 1, 131072, 0, 0, 131074, 0, 3 )
 script = ExtResource( 2 )

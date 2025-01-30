@@ -2,6 +2,9 @@ class_name TShape
 extends TileMap
 
 
+export (int) var n = 3 
+
+
 enum TColor {
 	CYAN,
 	PURPLE,
@@ -58,13 +61,36 @@ func rotate_reverse_shape(shape : int):
 	set_shape(shape)
 
 
-func rotate_shape(shape : int):
-	var shape_data = shapes[shape]
+#func rotate_shape(shape : int):
+func rotate_shape():
+	var used_cells = get_used_cells()
+	var matris = []
+	var rotated = []
+	var cell_coord : Vector2 = Vector2(-1, -1)
 	
-	if shape_data["state"] < shape_data["rotations"] - 1:
-		shape_data["state"] += 1
-	else:
-		shape_data["state"] = 0
+	for y in range(n):
+		var temp = []
+		for x in range(n):
+			if Vector2(x, y) in used_cells:
+				temp.append(get_cell(x, y))
+				if cell_coord == Vector2(-1, -1):
+					cell_coord = get_cell_autotile_coord(x, y)
+			else:
+				temp.append(-1)
+		
+		matris.append(temp)
 	
-	set_shape(shape)
+	rotated = matris.duplicate(true)
+	for r in rotated:
+		r.fill(-1)
 	
+	for y in range(n):
+		for x in range(n):
+			rotated[x][n - y - 1] = matris[y][x]
+	
+	for y in range(n):
+		for x in range(n):
+			if rotated[y][x] > -1:
+				set_cell(x, y, 0, false, false, false , cell_coord)
+			else:
+				set_cell(x, y, -1)
