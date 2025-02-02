@@ -42,13 +42,13 @@ const SRS_KICK_TABLE_I = [
 	[Vector2(-2, 0), Vector2(1, 0), Vector2(-2, -1), Vector2(1, 2)],  
 
 	# 1 -> 2 dönüşü için offsetler
-	[Vector2(-1, 0), Vector2(1, 0), Vector2(-1, 2), Vector2(1, -1)],  
+	[Vector2(-1, 0), Vector2(2, 0), Vector2(-1, 2), Vector2(2, -1)],  
 
 	# 2 -> 3 dönüşü için offsetler
-	[Vector2(2, 0), Vector2(-1, 0), Vector2(2, 1), Vector2(-1, -2)],  
+	[Vector2(2, 0), Vector2(-2, 0), Vector2(2, 1), Vector2(-2, -2)],  
 
 	# 3 -> 0 dönüşü için offsetler
-	[Vector2(1, 0), Vector2(-1, 0), Vector2(1, -2), Vector2(-1, 1)]  
+	[Vector2(1, 0), Vector2(-2, 0), Vector2(1, -2), Vector2(-2, 1)]  
 ]
 
 
@@ -103,7 +103,8 @@ func shape_spawn():
 
 
 func get_random_shape():
-	return randi() % shape_scenes.size()
+	return 0
+#	return randi() % shape_scenes.size()
 #	return randi() % TShape.SHAPE.size()
 
 
