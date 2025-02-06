@@ -14,6 +14,7 @@ onready var shape_scene = preload("res://Shape.tscn")
 onready var shape_scenes = ["res://Shapes/ShapeI.tscn", "res://Shapes/ShapeJ.tscn", "res://Shapes/ShapeL.tscn", "res://Shapes/ShapeO.tscn", "res://Shapes/ShapeS.tscn", "res://Shapes/ShapeT.tscn", "res://Shapes/ShapeZ.tscn"]
 
 var shapes : Array = []
+var shape_counter : int = 0
 var shape_current : TShape
 var shape_position : Vector2 = Vector2.ONE
 var shape_direction : Vector2 = Vector2.DOWN
@@ -58,16 +59,24 @@ func _ready():
 	
 	for i in range(shape_scenes.size()):
 		shape_scenes[i] = load(shape_scenes[i])
+		shapes.append(i)
+	
+	shapes.shuffle()
 	
 	shape_spawn()
 
 
+var is_down : bool = false
 func _input(event):
 	if event is InputEventKey:
 		if event.pressed:
 			match event.scancode:
 				KEY_DOWN:
-					timer_fall.wait_time = 0.2
+					timer_fall.wait_time = 0.1
+					if not is_down:
+						timer_fall.start()
+					
+					is_down = true
 				KEY_RIGHT:
 					shape_direction = Vector2.RIGHT
 					shape_move(shape_current, shape_direction)
@@ -76,14 +85,18 @@ func _input(event):
 					shape_move(shape_current, shape_direction)
 				KEY_UP:
 					shape_rotate()
-				KEY_K:
-					pass
-#					denek_rotate()
+				KEY_SPACE:
+					drop_shape()
 		
 		else: # released
 			match event.scancode:
 				KEY_DOWN:
 					timer_fall.wait_time = 0.5
+					is_down = false
+
+
+func drop_shape():
+	print("Shape is dropped")
 
 
 func shape_spawn():
@@ -103,7 +116,13 @@ func shape_spawn():
 
 
 func get_random_shape():
-	return 0
+	var s : int = shapes[shape_counter]
+	shape_counter += 1
+	if shape_counter == shape_scenes.size():
+		shape_counter = 0
+		shapes.shuffle()
+	
+	return s
 #	return randi() % shape_scenes.size()
 #	return randi() % TShape.SHAPE.size()
 
