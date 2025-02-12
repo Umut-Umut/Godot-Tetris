@@ -1,22 +1,17 @@
-[gd_scene load_steps=4 format=2]
+[gd_scene load_steps=6 format=2]
 
 [ext_resource path="res://images/tetrominoes.png" type="Texture" id=1]
 [ext_resource path="res://Board.gd" type="Script" id=2]
+[ext_resource path="res://Shape.gd" type="Script" id=3]
+[ext_resource path="res://BoardTileSet.tres" type="TileSet" id=4]
 
-[sub_resource type="TileSet" id=1]
+[sub_resource type="TileSet" id=2]
 0/name = "tetrominoes.png 0"
 0/texture = ExtResource( 1 )
 0/tex_offset = Vector2( 0, 0 )
 0/modulate = Color( 1, 1, 1, 1 )
-0/region = Rect2( 0, 0, 256, 32 )
-0/tile_mode = 2
-0/autotile/icon_coordinate = Vector2( 0, 0 )
-0/autotile/tile_size = Vector2( 32, 32 )
-0/autotile/spacing = 0
-0/autotile/occluder_map = [  ]
-0/autotile/navpoly_map = [  ]
-0/autotile/priority_map = [  ]
-0/autotile/z_index_map = [  ]
+0/region = Rect2( 224, 0, 32, 32 )
+0/tile_mode = 0
 0/occluder_offset = Vector2( 0, 0 )
 0/navigation_offset = Vector2( 0, 0 )
 0/shape_offset = Vector2( 0, 0 )
@@ -27,7 +22,8 @@
 0/z_index = 0
 
 [node name="Board" type="TileMap"]
-tile_set = SubResource( 1 )
+position = Vector2( 144, 0 )
+tile_set = ExtResource( 4 )
 cell_size = Vector2( 32, 32 )
 format = 1
 tile_data = PoolIntArray( 0, 0, 7, 1, 0, 7, 2, 0, 7, 3, 0, 7, 4, 0, 7, 5, 0, 7, 6, 0, 7, 7, 0, 7, 8, 0, 7, 9, 0, 7, 10, 0, 7, 11, 0, 7, 65536, 0, 7, 65547, 0, 7, 131072, 0, 7, 131083, 0, 7, 196608, 0, 7, 196619, 0, 7, 262144, 0, 7, 262155, 0, 7, 327680, 0, 7, 327691, 0, 7, 393216, 0, 7, 393227, 0, 7, 458752, 0, 7, 458763, 0, 7, 524288, 0, 7, 524299, 0, 7, 589824, 0, 7, 589835, 0, 7, 655360, 0, 7, 655371, 0, 7, 720896, 0, 7, 720907, 0, 7, 786432, 0, 7, 786443, 0, 7, 851968, 0, 7, 851979, 0, 7, 917504, 0, 7, 917515, 0, 7, 983040, 0, 7, 983051, 0, 7, 1048576, 0, 7, 1048587, 0, 7, 1114112, 0, 7, 1114123, 0, 7, 1179648, 0, 7, 1179659, 0, 7, 1245184, 0, 7, 1245195, 0, 7, 1310720, 0, 7, 1310731, 0, 7, 1376256, 0, 7, 1376257, 0, 7, 1376258, 0, 7, 1376259, 0, 7, 1376260, 0, 7, 1376261, 0, 7, 1376262, 0, 7, 1376263, 0, 7, 1376264, 0, 7, 1376265, 0, 7, 1376266, 0, 7, 1376267, 0, 7 )
@@ -36,5 +32,20 @@ script = ExtResource( 2 )
 [node name="ShapeFall" type="Timer" parent="."]
 wait_time = 0.5
 autostart = true
+
+[node name="TShapeGhost" type="TileMap" parent="."]
+modulate = Color( 1, 1, 1, 0.392157 )
+tile_set = SubResource( 2 )
+cell_size = Vector2( 32, 32 )
+format = 1
+script = ExtResource( 3 )
+
+[node name="ColorRect" type="ColorRect" parent="."]
+modulate = Color( 1, 1, 1, 0.196078 )
+margin_left = -144.0
+margin_bottom = 144.0
+
+[node name="HoldArea" type="Position2D" parent="."]
+position = Vector2( -136, 16 )
 
 [connection signal="timeout" from="ShapeFall" to="." method="_on_ShapeFall_timeout"]

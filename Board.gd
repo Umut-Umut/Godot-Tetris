@@ -12,16 +12,26 @@ onready var shape_scene = preload("res://Shape.tscn")
 #onready var denek = $Denek
 
 onready var shape_scenes = ["res://Shapes/ShapeI.tscn", "res://Shapes/ShapeJ.tscn", "res://Shapes/ShapeL.tscn", "res://Shapes/ShapeO.tscn", "res://Shapes/ShapeS.tscn", "res://Shapes/ShapeT.tscn", "res://Shapes/ShapeZ.tscn"]
+onready var shape_ghost = $TShapeGhost
+onready var hold_area : Position2D = $HoldArea
 
 var shapes : Array = []
 var shape_counter : int = 0
-var shape_current : TShape
+var shape_current : TShape = null
 var shape_position : Vector2 = Vector2.ONE
 var shape_direction : Vector2 = Vector2.DOWN
 var shape_cells : PoolVector2Array
 var shape_index : int
+var shape_hold : TShape = null
+var shape_hold_index : int = -1
 
 var shape_spawn_position : Vector2 = Vector2(5, 0)
+# Dunyanin en mantiksiz cozumu
+var hold_area_size : Vector2 = Vector2(3, 3)
+
+
+var is_shape_comit : bool = true
+var holded_index : int = -1
 
 
 const SRS_KICK_TABLE = [
@@ -51,7 +61,6 @@ const SRS_KICK_TABLE_I = [
 	# 3 -> 0 dönüşü için offsetler
 	[Vector2(1, 0), Vector2(-2, 0), Vector2(1, -2), Vector2(-2, 1)]  
 ]
-
 
 
 func _ready():
@@ -85,8 +94,30 @@ func _input(event):
 					shape_move(shape_current, shape_direction)
 				KEY_UP:
 					shape_rotate()
+					update_ghost(true)
 				KEY_SPACE:
 					drop_shape()
+				KEY_C:
+					if is_shape_comit:
+						var temp : TShape = null
+						if shape_hold:
+							shape_hold.position = shape_spawn_position * self.cell_size
+							shape_position = shape_spawn_position
+							temp = shape_current
+							shape_current = shape_hold
+						if temp:
+							shape_hold = temp
+							shape_hold.position = hold_area.position
+						else:
+							shape_current.position = hold_area.position
+							shape_hold = shape_current
+							shape_spawn()
+#						shape_hold = shape_scenes[shape_index].instance()
+#						add_child(shape_hold)
+#						shape_hold.position = hold_area.position
+						
+						is_shape_comit = false
+			update_ghost()
 		
 		else: # released
 			match event.scancode:
@@ -99,9 +130,55 @@ func drop_shape():
 	print("Shape is dropped")
 
 
-func shape_spawn():
+func update_ghost(is_rotated : bool = false):
+	shape_ghost.n = shape_current.n
+	shape_ghost.is_I = shape_current.is_I
+	shape_ghost.position.x = shape_current.position.x
+	
+#	shape_ghost.position.y += self.cell_size.y * (shape_current.n + 1)
+	
+	if is_rotated or shape_ghost.get_used_cells().empty():
+		shape_ghost.clear()
+		for cell in shape_current.get_used_cells():
+			shape_ghost.set_cellv(cell, 0)
+	
+	if shape_ghost.get_used_cells().empty():
+		return
+
+
+func set_hold_area(shape : TShape):
+	if not shape:
+		return
+	
+	var cells = shape.get_used_cells()
+	if cells.empty():
+		return
+	
+	var first_cell : Vector2 = cells[0]
+	var cell_coord = shape.get_cell_autotile_coord(first_cell.x, first_cell.y)
+	var shape_area_size : Vector2 = Vector2.ONE * shape.n
+	var pos : Vector2
+	
+	hold_area.clear()
+	for cell in cells:
+#		pos = cell + (hold_area_size - shape_area_size)
+		hold_area.set_cellv(
+			cell,
+			0, false, false, false, cell_coord)
+	
+	holded_index = shape_index
+	
+	shape.queue_free()
+
+
+func shape_spawn(index : int = -1):
+#	if shape_current:
+#		shape_current.queue_free()
 	# secilenlerin hepsi ayni cunku ready icinde oyle tanimladim.
-	shape_index = get_random_shape()
+	if index >= 0:
+		shape_index = index
+	else:
+		shape_index = get_random_shape()
 	
 #	shape_current = shape_scene.instance()
 	shape_current = shape_scenes[shape_index].instance()
@@ -110,6 +187,8 @@ func shape_spawn():
 #	shape_current.set_shape(shape_index)
 	
 	add_child(shape_current)
+	
+#	set_hold_area(shape_current)
 	
 	shape_position = shape_spawn_position
 	shape_current.position = map_to_world(shape_spawn_position)
@@ -142,6 +221,8 @@ func shape_commit(shape : TShape) -> PoolIntArray:
 		set_cellv(cell_global, 0)
 	
 	shape_current.queue_free()
+	
+	is_shape_comit = true
 	
 	return lines
 
@@ -192,6 +273,7 @@ func shape_move(shape : TShape, direction : Vector2, is_rotated : bool = false):
 				pop_lines(lines)
 			
 			shape_spawn()
+			shape_ghost.clear()
 	else:
 		shape_set_position(shape_current, new_pos)
 	
@@ -199,12 +281,12 @@ func shape_move(shape : TShape, direction : Vector2, is_rotated : bool = false):
 
 
 func shape_is_collide(shape : TShape, new_pos : Vector2, direction : Vector2, is_rotated : bool = false):
-	if not shape_current:
+	if not shape:
 		return
 	
 	var is_collision : bool = false
 	
-	var shape_cells_local = shape_current.get_used_cells()
+	var shape_cells_local = shape.get_used_cells()
 	for cell in shape_cells_local:
 		var collision_cell : Vector2 = new_pos + cell
 		# Kendi hucreleriyle cakisma testi
@@ -282,3 +364,4 @@ func shape_rotate():
 func _on_ShapeFall_timeout():
 	if shape_current:
 		shape_move(shape_current, Vector2.DOWN)
+		update_ghost()
