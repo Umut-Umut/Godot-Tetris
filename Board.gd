@@ -16,22 +16,25 @@ onready var shape_ghost = $TShapeGhost
 onready var hold_area : Position2D = $HoldArea
 
 var shapes : Array = []
+var shapes_next : Array = []
 var shape_counter : int = 0
 var shape_current : TShape = null
 var shape_position : Vector2 = Vector2.ONE
 var shape_direction : Vector2 = Vector2.DOWN
 var shape_cells : PoolVector2Array
 var shape_index : int
-var shape_hold : TShape = null
-var shape_hold_index : int = -1
+#var shape_hold_index : int = -1
 
 var shape_spawn_position : Vector2 = Vector2(5, 0)
 # Dunyanin en mantiksiz cozumu
-var hold_area_size : Vector2 = Vector2(3, 3)
+#var hold_area_size : Vector2 = Vector2(3, 3)
 
-
+var shape_hold : TShape = null
 var is_shape_comit : bool = true
-var holded_index : int = -1
+#var holded_index : int = -1
+
+var next_queue : Array = []
+onready var next_que_poses = $NextQuePoses.get_children()
 
 
 const SRS_KICK_TABLE = [
@@ -63,14 +66,20 @@ const SRS_KICK_TABLE_I = [
 ]
 
 
+# NextQueue icine 3 sekli yerlestir.
+# Bu sekilleri pos2d lere yerlestir.
+# spawn dan sonra NextQueue pop sonra siradaki sekli append
+
 func _ready():
 	randomize()
 	
 	for i in range(shape_scenes.size()):
 		shape_scenes[i] = load(shape_scenes[i])
 		shapes.append(i)
+		shapes_next.append(i)
 	
 	shapes.shuffle()
+	shapes_next.shuffle()
 	
 	shape_spawn()
 
@@ -146,42 +155,45 @@ func update_ghost(is_rotated : bool = false):
 		return
 
 
-func set_hold_area(shape : TShape):
-	if not shape:
-		return
-	
-	var cells = shape.get_used_cells()
-	if cells.empty():
-		return
-	
-	var first_cell : Vector2 = cells[0]
-	var cell_coord = shape.get_cell_autotile_coord(first_cell.x, first_cell.y)
-	var shape_area_size : Vector2 = Vector2.ONE * shape.n
-	var pos : Vector2
-	
-	hold_area.clear()
-	for cell in cells:
-#		pos = cell + (hold_area_size - shape_area_size)
-		hold_area.set_cellv(
-			cell,
-			0, false, false, false, cell_coord)
-	
-	holded_index = shape_index
-	
-	shape.queue_free()
+#func set_hold_area(shape : TShape):
+#	if not shape:
+#		return
+#
+#	var cells = shape.get_used_cells()
+#	if cells.empty():
+#		return
+#
+#	var first_cell : Vector2 = cells[0]
+#	var cell_coord = shape.get_cell_autotile_coord(first_cell.x, first_cell.y)
+#	var shape_area_size : Vector2 = Vector2.ONE * shape.n
+#	var pos : Vector2
+#
+#	hold_area.clear()
+#	for cell in cells:
+##		pos = cell + (hold_area_size - shape_area_size)
+#		hold_area.set_cellv(
+#			cell,
+#			0, false, false, false, cell_coord)
+#
+##	holded_index = shape_index
+#
+#	shape.queue_free()
 
 
-func shape_spawn(index : int = -1):
+func shape_spawn():
 #	if shape_current:
 #		shape_current.queue_free()
 	# secilenlerin hepsi ayni cunku ready icinde oyle tanimladim.
-	if index >= 0:
-		shape_index = index
-	else:
-		shape_index = get_random_shape()
+#	if index >= 0:
+#		shape_index = index
+#	else:
+#		shape_index = get_random_shape()
 	
+	shape_index = get_random_shape()
 #	shape_current = shape_scene.instance()
 	shape_current = shape_scenes[shape_index].instance()
+	
+	update_next_que()
 	
 	# set_shape burada cagirilacak.
 #	shape_current.set_shape(shape_index)
@@ -195,15 +207,53 @@ func shape_spawn(index : int = -1):
 
 
 func get_random_shape():
+	# Karistirilmis olan sekiller listesinden sirasiyla sekilleri geri dondurur.
 	var s : int = shapes[shape_counter]
 	shape_counter += 1
 	if shape_counter == shape_scenes.size():
 		shape_counter = 0
-		shapes.shuffle()
+		shapes = shapes_next.duplicate()
+		shapes_next.shuffle()
 	
 	return s
 #	return randi() % shape_scenes.size()
 #	return randi() % TShape.SHAPE.size()
+
+
+func update_next_que():
+	#var shape_counter : int = 0
+	
+	#var next_queue : Array = []
+	#onready var next_que_poses = $NextQuePoses.get_children()
+	
+	if next_queue.empty():
+		var next_pos_count : int = 0
+		for i in range(shape_counter, shape_counter + 3):
+			var s = shape_scenes[shapes[i]].instance()
+			next_queue.append(s)
+			s.position = next_que_poses[next_pos_count].position
+			next_pos_count += 1
+			
+			add_child(s)
+	else:
+		next_queue.pop_front().queue_free()
+		var next = (shape_counter + 2)
+		var shape = null
+		if next < shapes.size():
+			shape = shape_scenes[shapes[next]].instance()
+		else:
+			shape = shape_scenes[shapes_next[next % shapes.size()]].instance()
+		
+		next_queue.append(shape)
+		add_child(shape)
+		
+		
+		for i in range(3):
+			if i < next_queue.size():
+				next_queue[i].position = next_que_poses[i].position
+		
+		
+		
 
 
 # Sekli oyun tahtasina yerlestirdikten sonra
