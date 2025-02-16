@@ -16,6 +16,7 @@ onready var shape_ghost = $TShapeGhost
 onready var hold_area : Position2D = $HoldArea
 
 var shapes : Array = []
+# Bir sonraki permütasyonu tutuyor.
 var shapes_next : Array = []
 var shape_counter : int = 0
 var shape_current : TShape = null
@@ -212,6 +213,8 @@ func get_random_shape():
 	shape_counter += 1
 	if shape_counter == shape_scenes.size():
 		shape_counter = 0
+		# next_queue işleminde kullanılmak üzere bir sonraki permütasyon
+		# oluşturuluyor.
 		shapes = shapes_next.duplicate()
 		shapes_next.shuffle()
 	
@@ -239,6 +242,8 @@ func update_next_que():
 		next_queue.pop_front().queue_free()
 		var next = (shape_counter + 2)
 		var shape = null
+		# Eğer mevcut şekilden üç sonraki şeklin indeksi sınırı aşıyorsa,
+		# "shapes_next"den şekli alıyor.
 		if next < shapes.size():
 			shape = shape_scenes[shapes[next]].instance()
 		else:
@@ -251,9 +256,6 @@ func update_next_que():
 		for i in range(3):
 			if i < next_queue.size():
 				next_queue[i].position = next_que_poses[i].position
-		
-		
-		
 
 
 # Sekli oyun tahtasina yerlestirdikten sonra
