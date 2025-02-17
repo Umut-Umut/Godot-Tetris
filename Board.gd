@@ -37,6 +37,8 @@ var is_shape_comit : bool = true
 var next_queue : Array = []
 onready var next_que_poses = $NextQuePoses.get_children()
 
+var shape_ghost_pos : Vector2 = shape_spawn_position
+
 
 const SRS_KICK_TABLE = [
 	# 0 -> 1 dönüşü için offsetler
@@ -83,6 +85,7 @@ func _ready():
 	shapes_next.shuffle()
 	
 	shape_spawn()
+	update_ghost()
 
 
 var is_down : bool = false
@@ -99,14 +102,17 @@ func _input(event):
 				KEY_RIGHT:
 					shape_direction = Vector2.RIGHT
 					shape_move(shape_current, shape_direction)
+					update_ghost()
 				KEY_LEFT:
 					shape_direction = Vector2.LEFT
 					shape_move(shape_current, shape_direction)
+					update_ghost()
 				KEY_UP:
 					shape_rotate()
 					update_ghost(true)
 				KEY_SPACE:
-					drop_shape()
+					if not event.echo:
+						hard_drop()
 				KEY_C:
 					if is_shape_comit:
 						var temp : TShape = null
@@ -127,7 +133,7 @@ func _input(event):
 #						shape_hold.position = hold_area.position
 						
 						is_shape_comit = false
-			update_ghost()
+#			update_ghost()
 		
 		else: # released
 			match event.scancode:
@@ -136,24 +142,35 @@ func _input(event):
 					is_down = false
 
 
-func drop_shape():
-	print("Shape is dropped")
+func hard_drop():
+	for i in range(HEIGHT):
+			# break olmadigindan dolayi gereksiz islem yapiliyor.
+		if shape_move(shape_current, Vector2.DOWN):
+			break
 
 
 func update_ghost(is_rotated : bool = false):
-	shape_ghost.n = shape_current.n
-	shape_ghost.is_I = shape_current.is_I
-	shape_ghost.position.x = shape_current.position.x
-	
-#	shape_ghost.position.y += self.cell_size.y * (shape_current.n + 1)
-	
+	# called if event.pressed
 	if is_rotated or shape_ghost.get_used_cells().empty():
 		shape_ghost.clear()
 		for cell in shape_current.get_used_cells():
 			shape_ghost.set_cellv(cell, 0)
 	
-	if shape_ghost.get_used_cells().empty():
-		return
+#	shape_ghost.position.x = shape_current.position.x
+	shape_ghost_pos = shape_position
+	
+	for i in range(HEIGHT):
+		if shape_move(shape_ghost, Vector2.DOWN, false, true):
+			break
+	
+	shape_ghost.n = shape_current.n
+#	shape_ghost.is_I = shape_current.is_I
+#	shape_ghost.position.x = shape_current.position.x
+	
+#	shape_ghost.position.y += self.cell_size.y * (shape_current.n + 1)
+#
+#	if shape_ghost.get_used_cells().empty():
+#		return
 
 
 #func set_hold_area(shape : TShape):
@@ -182,8 +199,8 @@ func update_ghost(is_rotated : bool = false):
 
 
 func shape_spawn():
-#	if shape_current:
-#		shape_current.queue_free()
+	if shape_current:
+		shape_current.queue_free()
 	# secilenlerin hepsi ayni cunku ready icinde oyle tanimladim.
 #	if index >= 0:
 #		shape_index = index
@@ -198,13 +215,14 @@ func shape_spawn():
 	
 	# set_shape burada cagirilacak.
 #	shape_current.set_shape(shape_index)
-	
-	add_child(shape_current)
-	
 #	set_hold_area(shape_current)
 	
 	shape_position = shape_spawn_position
+	shape_ghost_pos = shape_spawn_position
 	shape_current.position = map_to_world(shape_spawn_position)
+	
+	add_child(shape_current)
+
 
 
 func get_random_shape():
@@ -314,10 +332,20 @@ func check_lines(lines : PoolIntArray) -> PoolIntArray:
 	
 	return lines_full
 
-
-func shape_move(shape : TShape, direction : Vector2, is_rotated : bool = false):
+# shape : TShape gereksiz
+func shape_move(shape : TShape, direction : Vector2, is_rotated : bool = false, is_ghost : bool = false):
 	var new_pos = shape_position + direction
-	if not is_rotated and shape_is_collide(shape_current, new_pos, direction):
+	
+	if is_ghost:
+		new_pos = shape_ghost_pos + direction
+		if shape_is_collide(shape_ghost, new_pos, direction):
+			return true
+		else:
+			shape_ghost_pos = new_pos
+			shape_ghost.position = map_to_world(shape_ghost_pos)
+				
+				
+	elif not is_rotated and shape_is_collide(shape_current, new_pos, direction):
 		if direction == Vector2.DOWN:
 			var lines : PoolIntArray = shape_commit(shape_current)
 			lines = check_lines(lines)
@@ -326,15 +354,21 @@ func shape_move(shape : TShape, direction : Vector2, is_rotated : bool = false):
 			
 			shape_spawn()
 			shape_ghost.clear()
+			update_ghost()
+			
+			shape_direction = Vector2.ZERO
+			return true
 	else:
 		shape_set_position(shape_current, new_pos)
 	
 	shape_direction = Vector2.ZERO
+	
+	return false
 
 
 func shape_is_collide(shape : TShape, new_pos : Vector2, direction : Vector2, is_rotated : bool = false):
 	if not shape:
-		return
+		return false
 	
 	var is_collision : bool = false
 	
@@ -346,6 +380,7 @@ func shape_is_collide(shape : TShape, new_pos : Vector2, direction : Vector2, is
 		if is_rotated or not (cell + direction) in shape_cells_local:
 			if get_cellv(collision_cell) >= 0:
 				is_collision = true
+				break
 	
 	return is_collision
 
@@ -416,4 +451,4 @@ func shape_rotate():
 func _on_ShapeFall_timeout():
 	if shape_current:
 		shape_move(shape_current, Vector2.DOWN)
-		update_ghost()
+#		update_ghost()
