@@ -282,13 +282,15 @@ func shape_commit(shape : TShape) -> PoolIntArray:
 	var shape_used_cells = shape.get_used_cells()
 	var lines : PoolIntArray = []
 	
+	var tile_coord = shape.get_cell_autotile_coord(shape_used_cells[0].x, shape_used_cells[0].y)
+	
 	for cell_local in shape_used_cells:
 		var cell_global : Vector2 = cell_local + shape_position
 		
 		if not cell_global.y in lines:
 			lines.append(cell_global.y)
 		
-		set_cellv(cell_global, 0)
+		set_cellv(cell_global, 0, false, false, false, tile_coord)
 	
 	shape_current.queue_free()
 	
@@ -297,26 +299,47 @@ func shape_commit(shape : TShape) -> PoolIntArray:
 	return lines
 
 
-func pop_lines(lines : PoolIntArray):
+#func pop_lines(lines : PoolIntArray):
+#	lines.sort()
+#
+#	var counter_full_lines : int = 0
+#	var is_full_line : bool = false
+#
+#
+#	for i in range(HEIGHT, 0, -1):
+#		if i in lines:
+#			counter_full_lines += 1
+#			is_full_line = true
+#
+#		for j in range(1, WIDTH + 1):
+#			if is_full_line:
+#				set_cell(j, i, -1)
+#
+#			elif get_cell(j, i) > -1:
+#				set_cell(j, i, -1)
+#				set_cell(j, i+counter_full_lines, 0)
+#
+#		is_full_line = false
+func pop_lines(lines: PoolIntArray):
+	# Optimized with ChatGPT.
+	
 	lines.sort()
 	
-	var counter_full_lines : int = 0
-	var is_full_line : bool = false
+	var counter_full_lines := 0
 	
 	for i in range(HEIGHT, 0, -1):
 		if i in lines:
 			counter_full_lines += 1
-			is_full_line = true
-		
-		for j in range(1, WIDTH + 1):
-			if is_full_line:
-				set_cell(j, i, -1)
-			
-			elif get_cell(j, i) > -1:
-				set_cell(j, i, -1)
-				set_cell(j, i+counter_full_lines, 0)
-		
-		is_full_line = false
+			for j in range(1, WIDTH + 1):
+				set_cell(j, i, -1)  # Satırı temizle
+		elif counter_full_lines > 0:
+			for j in range(1, WIDTH + 1):
+				set_cell(j, i + counter_full_lines, get_cell(j, i),
+				false, 
+				false,
+				false,
+				get_cell_autotile_coord(j, i))
+				set_cell(j, i, -1)  # Önceki hücreyi temizle
 
 
 func check_lines(lines : PoolIntArray) -> PoolIntArray:
