@@ -1,3 +1,3 @@
 # Godot-Tetris
 
-This game is made with Godot 3.6
+This game is being developed with Godot 3.6.
