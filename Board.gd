@@ -158,6 +158,7 @@ func update_ghost(is_rotated : bool = false):
 	
 #	shape_ghost.position.x = shape_current.position.x
 	shape_ghost_pos = shape_position
+	shape_move(shape_ghost, shape_direction, false, true)
 	
 	for i in range(HEIGHT):
 		if shape_move(shape_ghost, Vector2.DOWN, false, true):
