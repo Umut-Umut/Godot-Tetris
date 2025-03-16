@@ -34,6 +34,10 @@ script = ExtResource( 2 )
 wait_time = 0.5
 autostart = true
 
+[node name="LockDown" type="Timer" parent="."]
+wait_time = 0.5
+one_shot = true
+
 [node name="TShapeGhost" type="TileMap" parent="."]
 modulate = Color( 1, 1, 1, 0.392157 )
 tile_set = SubResource( 2 )
@@ -50,7 +54,7 @@ margin_bottom = 144.0
 modulate = Color( 1, 1, 1, 0.196078 )
 margin_left = 384.0
 margin_right = 504.0
-margin_bottom = 384.0
+margin_bottom = 640.0
 
 [node name="HoldArea" type="Position2D" parent="."]
 position = Vector2( -136, 16 )
@@ -66,6 +70,12 @@ position = Vector2( 386, 138 )
 [node name="pos3" type="Position2D" parent="NextQuePoses"]
 position = Vector2( 386, 266 )
 
+[node name="pos4" type="Position2D" parent="NextQuePoses"]
+position = Vector2( 384, 392 )
+
+[node name="pos5" type="Position2D" parent="NextQuePoses"]
+position = Vector2( 384, 520 )
+
 [node name="Sprite" type="Sprite" parent="."]
 modulate = Color( 1, 1, 1, 0.392157 )
 position = Vector2( -2.13334, -2.13334 )
@@ -74,4 +84,13 @@ texture = ExtResource( 5 )
 centered = false
 offset = Vector2( 32, 32 )
 
+[node name="Label" type="Label" parent="."]
+margin_left = -144.0
+margin_top = 144.0
+margin_bottom = 704.0
+text = "SCORES"
+align = 1
+valign = 1
+
 [connection signal="timeout" from="ShapeFall" to="." method="_on_ShapeFall_timeout"]
+[connection signal="timeout" from="LockDown" to="." method="_on_LockDown_timeout"]

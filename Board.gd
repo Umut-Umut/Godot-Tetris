@@ -6,6 +6,7 @@ const HEIGHT = 20
 
 
 onready var timer_fall = $ShapeFall
+onready var timer_lock = $LockDown
 
 # SHAPES
 onready var shape_scene = preload("res://Shape.tscn")
@@ -94,7 +95,7 @@ func _input(event):
 		if event.pressed:
 			match event.scancode:
 				KEY_DOWN:
-					timer_fall.wait_time = 0.1
+					timer_fall.wait_time = 0.025
 					if not is_down:
 						timer_fall.start()
 					
@@ -133,6 +134,7 @@ func _input(event):
 #						shape_hold.position = hold_area.position
 						
 						is_shape_comit = false
+						update_ghost(true)
 #			update_ghost()
 		
 		else: # released
@@ -200,8 +202,8 @@ func update_ghost(is_rotated : bool = false):
 
 
 func shape_spawn():
-	if shape_current:
-		shape_current.queue_free()
+#	if shape_current:
+#		shape_current.queue_free()
 	# secilenlerin hepsi ayni cunku ready icinde oyle tanimladim.
 #	if index >= 0:
 #		shape_index = index
@@ -241,8 +243,14 @@ func get_random_shape():
 #	return randi() % shape_scenes.size()
 #	return randi() % TShape.SHAPE.size()
 
-
+var next_limit = 5
+var is_next_limit_fixed = false
 func update_next_que():
+	if is_next_limit_fixed:
+		pass
+	elif next_limit > next_que_poses.size():
+		next_limit = next_que_poses.size()
+		is_next_limit_fixed = true
 	#var shape_counter : int = 0
 	
 	#var next_queue : Array = []
@@ -250,7 +258,7 @@ func update_next_que():
 	
 	if next_queue.empty():
 		var next_pos_count : int = 0
-		for i in range(shape_counter, shape_counter + 3):
+		for i in range(shape_counter, shape_counter + next_limit):
 			var s = shape_scenes[shapes[i]].instance()
 			next_queue.append(s)
 			s.position = next_que_poses[next_pos_count].position
@@ -259,7 +267,7 @@ func update_next_que():
 			add_child(s)
 	else:
 		next_queue.pop_front().queue_free()
-		var next = (shape_counter + 2)
+		var next = (shape_counter + (next_limit - 1))
 		var shape = null
 		# Eğer mevcut şekilden üç sonraki şeklin indeksi sınırı aşıyorsa,
 		# "shapes_next"den şekli alıyor.
@@ -272,7 +280,7 @@ func update_next_que():
 		add_child(shape)
 		
 		
-		for i in range(3):
+		for i in range(next_limit):
 			if i < next_queue.size():
 				next_queue[i].position = next_que_poses[i].position
 
@@ -371,19 +379,23 @@ func shape_move(shape : TShape, direction : Vector2, is_rotated : bool = false, 
 				
 	elif not is_rotated and shape_is_collide(shape_current, new_pos, direction):
 		if direction == Vector2.DOWN:
-			var lines : PoolIntArray = shape_commit(shape_current)
-			lines = check_lines(lines)
-			if not lines.empty():
-				pop_lines(lines)
-			
-			shape_spawn()
-			shape_ghost.clear()
-			update_ghost()
-			
-			shape_direction = Vector2.ZERO
+			timer_lock.start()
+#			var lines : PoolIntArray = shape_commit(shape_current)
+#			lines = check_lines(lines)
+#			if not lines.empty():
+#				pop_lines(lines)
+#
+#			shape_spawn()
+#			shape_ghost.clear()
+#			update_ghost()
+#
+#			shape_direction = Vector2.ZERO
 			return true
 	else:
 		shape_set_position(shape_current, new_pos)
+		
+		if not shape_is_collide(shape_current, shape_position, Vector2.DOWN):
+			timer_lock.stop()
 	
 	shape_direction = Vector2.ZERO
 	
@@ -476,3 +488,16 @@ func _on_ShapeFall_timeout():
 	if shape_current:
 		shape_move(shape_current, Vector2.DOWN)
 #		update_ghost()
+
+
+func _on_LockDown_timeout():
+	var lines : PoolIntArray = shape_commit(shape_current)
+	lines = check_lines(lines)
+	if not lines.empty():
+		pop_lines(lines)
+
+	shape_spawn()
+	shape_ghost.clear()
+	update_ghost()
+
+	shape_direction = Vector2.ZERO
