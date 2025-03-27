@@ -45,6 +45,12 @@ export (bool) var is_I = false
 var state_rotation : int = 0
 
 
+func _ready():
+	if find_node("ColorRect"):
+		if $ColorRect.visible:
+			$ColorRect.color = Color(randf(), randf(), randf(), 0.25)
+
+
 #func set_shape(shape : int):
 #	clear()
 #

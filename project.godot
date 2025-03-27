@@ -10,11 +10,17 @@ config_version=4
 
 _global_script_classes=[ {
 "base": "TileMap",
+"class": "Board",
+"language": "GDScript",
+"path": "res://Board.gd"
+}, {
+"base": "TileMap",
 "class": "TShape",
 "language": "GDScript",
 "path": "res://Shape.gd"
 } ]
 _global_script_class_icons={
+"Board": "",
 "TShape": ""
 }
 

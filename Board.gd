@@ -1,3 +1,4 @@
+class_name Board
 extends TileMap
 
 
@@ -102,11 +103,11 @@ func _input(event):
 					is_down = true
 				KEY_RIGHT:
 					shape_direction = Vector2.RIGHT
-					shape_move(shape_current, shape_direction)
+					shape_move(shape_direction)
 					update_ghost()
 				KEY_LEFT:
 					shape_direction = Vector2.LEFT
-					shape_move(shape_current, shape_direction)
+					shape_move(shape_direction)
 					update_ghost()
 				KEY_UP:
 					shape_rotate()
@@ -147,12 +148,12 @@ func _input(event):
 func hard_drop():
 	for i in range(HEIGHT):
 			# break olmadigindan dolayi gereksiz islem yapiliyor.
-		if shape_move(shape_current, Vector2.DOWN):
+		if shape_move(Vector2.DOWN):
 			break
 
 
 func update_ghost(is_rotated : bool = false):
-	# called if event.pressed
+	# clear and update cells
 	if is_rotated or shape_ghost.get_used_cells().empty():
 		shape_ghost.clear()
 		for cell in shape_current.get_used_cells():
@@ -160,10 +161,10 @@ func update_ghost(is_rotated : bool = false):
 	
 #	shape_ghost.position.x = shape_current.position.x
 	shape_ghost_pos = shape_position
-	shape_move(shape_ghost, shape_direction, false, true)
+	shape_ghost.position = map_to_world(shape_position)
 	
 	for i in range(HEIGHT):
-		if shape_move(shape_ghost, Vector2.DOWN, false, true):
+		if shape_move(Vector2.DOWN, true):
 			break
 	
 	shape_ghost.n = shape_current.n
@@ -365,44 +366,51 @@ func check_lines(lines : PoolIntArray) -> PoolIntArray:
 	return lines_full
 
 # shape : TShape gereksiz
-func shape_move(shape : TShape, direction : Vector2, is_rotated : bool = false, is_ghost : bool = false):
-	var new_pos = shape_position + direction
-	
+#func shape_move(shape : TShape, direction : Vector2, is_rotated : bool = false, is_ghost : bool = false):
+func shape_move(direction : Vector2, is_ghost : bool = false):
 	if is_ghost:
-		new_pos = shape_ghost_pos + direction
-		if shape_is_collide(shape_ghost, new_pos, direction):
+		if shape_is_collide(shape_ghost, shape_ghost_pos, direction):
 			return true
 		else:
-			shape_ghost_pos = new_pos
+			shape_ghost_pos += direction
 			shape_ghost.position = map_to_world(shape_ghost_pos)
 				
-				
-	elif not is_rotated and shape_is_collide(shape_current, new_pos, direction):
-		if direction == Vector2.DOWN:
+	elif shape_is_collide(shape_current, shape_position, direction):
+		if direction == Vector2.DOWN and timer_lock.is_stopped():
 			timer_lock.start()
-#			var lines : PoolIntArray = shape_commit(shape_current)
-#			lines = check_lines(lines)
-#			if not lines.empty():
-#				pop_lines(lines)
-#
-#			shape_spawn()
-#			shape_ghost.clear()
-#			update_ghost()
-#
-#			shape_direction = Vector2.ZERO
 			return true
 	else:
-		shape_set_position(shape_current, new_pos)
-		
-		if not shape_is_collide(shape_current, shape_position, Vector2.DOWN):
+		if direction == Vector2.DOWN and not timer_lock.is_stopped():
 			timer_lock.stop()
+		
+		shape_set_position(shape_current, shape_position + direction)
+#	elif not is_rotated and shape_is_collide(shape_current, shape_position, direction):
+#		if direction == Vector2.DOWN and timer_lock.is_stopped():
+#			timer_lock.start()
+#			print("STarted")
+#			return true
+#	else:
+#		if shape_position.y == 19:
+#			print("Bu nasil bir hatadir dermani yoktur")
+#		if not shape_is_collide(shape_current, shape_position, Vector2.DOWN):
+#			if not timer_lock.is_stopped():
+#				timer_lock.stop()
+#				print("Stopped")
+#		shape_set_position(shape_current, shape_position + direction)
 	
 	shape_direction = Vector2.ZERO
 	
 	return false
 
 
-func shape_is_collide(shape : TShape, new_pos : Vector2, direction : Vector2, is_rotated : bool = false):
+#func shape_is_collide(shape : TShape, shape_position : Vector2, direction : Vector2, is_rotated : bool = false, is_lock_check : bool = false):
+func shape_is_collide(shape : TShape, pos : Vector2, direction : Vector2):
+	# is_rotated parametresi kullanilmiyor gibi
+	# shape_position gereksiz. Mevcut pozisyon ve yon kullanmayi dene
+	
+	if direction == Vector2.ZERO:
+		return false
+	
 	if not shape:
 		return false
 	
@@ -410,36 +418,46 @@ func shape_is_collide(shape : TShape, new_pos : Vector2, direction : Vector2, is
 	
 	var shape_cells_local = shape.get_used_cells()
 	for cell in shape_cells_local:
-		var collision_cell : Vector2 = new_pos + cell
+		var collision_cell : Vector2 = pos + cell + direction
+#		var collision_cell : Vector2 = shape_position + cell
 		# Kendi hucreleriyle cakisma testi
 		# Eger sekil dondurulmus ise kendi hucrelerini kontrol edecek.
-		if is_rotated or not (cell + direction) in shape_cells_local:
+		if not (cell + direction) in shape_cells_local:
+#		if is_rotated or not (cell + direction) in shape_cells_local:
 			if get_cellv(collision_cell) >= 0:
 				is_collision = true
 				break
+#			if is_lock_check:
+#				if get_cellv(collision_cell + direction):
+#					is_collision = true
+#					break
+#			else:
+#				if get_cellv(collision_cell) >= 0:
+#					is_collision = true
+#					break
 	
 	return is_collision
 
 
-func matris_is_collide(matris : Array, new_pos : Vector2) -> bool:
+func matris_is_collide(matris : Array, shape_position : Vector2) -> bool:
 	if matris.empty():
 		return true
 	
 	var n = matris.size()
 	
-	# new_pos; seklin tahta uzerindeki bir sonraki koordinati
+	# shape_position; seklin tahta uzerindeki bir sonraki koordinati
 	for y in range(n):
 		for x in range(n):
 			if matris[y][x] == -1:
 				continue
 			
-			var global_pos : Vector2 = Vector2(x, y) + new_pos
+			var global_pos : Vector2 = Vector2(x, y) + shape_position
 			if get_cellv(global_pos) >= 0:
 				return true
 	
 	return false
 
-
+# Bu fonksiyon da sikintili. Gereksiz parametreler ve global erisim var.
 func shape_set_position(shape : TShape, new_pos : Vector2):
 	if not shape_current:
 		return
@@ -464,7 +482,7 @@ func shape_rotate():
 			if matris_is_collide(rotated_matris, shape_position + kick):
 				pass
 			else:
-				shape_move(shape_current, kick, true)
+				shape_move(kick)
 				shape_current.set_shape(rotated_matris)
 				is_rotated = true
 				break
@@ -486,7 +504,7 @@ func shape_rotate():
 
 func _on_ShapeFall_timeout():
 	if shape_current:
-		shape_move(shape_current, Vector2.DOWN)
+		shape_move(Vector2.DOWN)
 #		update_ghost()
 
 
