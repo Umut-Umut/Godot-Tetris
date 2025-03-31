@@ -149,6 +149,7 @@ func hard_drop():
 	for i in range(HEIGHT):
 			# break olmadigindan dolayi gereksiz islem yapiliyor.
 		if shape_move(Vector2.DOWN):
+			shape_lock()
 			break
 
 
@@ -247,26 +248,24 @@ func get_random_shape():
 var next_limit = 5
 var is_next_limit_fixed = false
 func update_next_que():
+	# Siniri astigi icin next_limit sabitlendiyse, isaretle ve surekli bakma.
 	if is_next_limit_fixed:
 		pass
 	elif next_limit > next_que_poses.size():
 		next_limit = next_que_poses.size()
 		is_next_limit_fixed = true
-	#var shape_counter : int = 0
 	
-	#var next_queue : Array = []
-	#onready var next_que_poses = $NextQuePoses.get_children()
-	
+	# Eger, next_queue bos ise siradaki sekilleri olustur ve ekle.
 	if next_queue.empty():
 		var next_pos_count : int = 0
 		for i in range(shape_counter, shape_counter + next_limit):
 			var s = shape_scenes[shapes[i]].instance()
 			next_queue.append(s)
-			s.position = next_que_poses[next_pos_count].position
+			s.position = next_que_poses[next_pos_count].global_position
 			next_pos_count += 1
 			
 			add_child(s)
-	else:
+	else: # Siranin en basindakini sil ve siradaklari one kaydir.
 		next_queue.pop_front().queue_free()
 		var next = (shape_counter + (next_limit - 1))
 		var shape = null
@@ -283,7 +282,7 @@ func update_next_que():
 		
 		for i in range(next_limit):
 			if i < next_queue.size():
-				next_queue[i].position = next_que_poses[i].position
+				next_queue[i].position = next_que_poses[i].global_position
 
 
 # Sekli oyun tahtasina yerlestirdikten sonra
@@ -367,7 +366,7 @@ func check_lines(lines : PoolIntArray) -> PoolIntArray:
 
 # shape : TShape gereksiz
 #func shape_move(shape : TShape, direction : Vector2, is_rotated : bool = false, is_ghost : bool = false):
-func shape_move(direction : Vector2, is_ghost : bool = false):
+func shape_move(direction : Vector2, is_ghost : bool = false, is_rotated : bool = false):
 	if is_ghost:
 		if shape_is_collide(shape_ghost, shape_ghost_pos, direction):
 			return true
@@ -375,7 +374,7 @@ func shape_move(direction : Vector2, is_ghost : bool = false):
 			shape_ghost_pos += direction
 			shape_ghost.position = map_to_world(shape_ghost_pos)
 				
-	elif shape_is_collide(shape_current, shape_position, direction):
+	elif not is_rotated and shape_is_collide(shape_current, shape_position, direction):
 		if direction == Vector2.DOWN and timer_lock.is_stopped():
 			timer_lock.start()
 			return true
@@ -482,9 +481,9 @@ func shape_rotate():
 			if matris_is_collide(rotated_matris, shape_position + kick):
 				pass
 			else:
-				shape_move(kick)
-				shape_current.set_shape(rotated_matris)
 				is_rotated = true
+				shape_move(kick, false, is_rotated)
+				shape_current.set_shape(rotated_matris)
 				break
 	else:
 		shape_current.set_shape(rotated_matris)
@@ -502,13 +501,7 @@ func shape_rotate():
 #		shape_current.rotate_reverse_shape(shape_index)
 
 
-func _on_ShapeFall_timeout():
-	if shape_current:
-		shape_move(Vector2.DOWN)
-#		update_ghost()
-
-
-func _on_LockDown_timeout():
+func shape_lock():
 	var lines : PoolIntArray = shape_commit(shape_current)
 	lines = check_lines(lines)
 	if not lines.empty():
@@ -519,3 +512,27 @@ func _on_LockDown_timeout():
 	update_ghost()
 
 	shape_direction = Vector2.ZERO
+
+
+func _on_ShapeFall_timeout():
+	if shape_current:
+		shape_move(Vector2.DOWN)
+#		update_ghost()
+
+
+func _on_LockDown_timeout():
+	if not shape_is_collide(shape_current, shape_position, Vector2.DOWN):
+		timer_lock.start()
+		return
+	
+	shape_lock()
+#	var lines : PoolIntArray = shape_commit(shape_current)
+#	lines = check_lines(lines)
+#	if not lines.empty():
+#		pop_lines(lines)
+#
+#	shape_spawn()
+#	shape_ghost.clear()
+#	update_ghost()
+#
+#	shape_direction = Vector2.ZERO

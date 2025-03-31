@@ -46,20 +46,6 @@ cell_size = Vector2( 32, 32 )
 format = 1
 script = ExtResource( 3 )
 
-[node name="HoldRect" type="ColorRect" parent="."]
-modulate = Color( 1, 1, 1, 0.196078 )
-margin_left = -144.0
-margin_bottom = 144.0
-
-[node name="NextRect" type="ColorRect" parent="."]
-modulate = Color( 1, 1, 1, 0.196078 )
-margin_left = 384.0
-margin_right = 504.0
-margin_bottom = 640.0
-
-[node name="HoldArea" type="Position2D" parent="."]
-position = Vector2( -136, 16 )
-
 [node name="NextQuePoses" type="Node2D" parent="."]
 
 [node name="pos1" type="Position2D" parent="NextQuePoses"]
@@ -76,6 +62,20 @@ position = Vector2( 386, 384 )
 
 [node name="pos5" type="Position2D" parent="NextQuePoses"]
 position = Vector2( 386, 512 )
+
+[node name="HoldRect" type="ColorRect" parent="."]
+modulate = Color( 1, 1, 1, 0.196078 )
+margin_left = -144.0
+margin_bottom = 144.0
+
+[node name="NextRect" type="ColorRect" parent="."]
+modulate = Color( 1, 1, 1, 0.196078 )
+margin_left = 384.0
+margin_right = 504.0
+margin_bottom = 640.0
+
+[node name="HoldArea" type="Position2D" parent="."]
+position = Vector2( -136, 16 )
 
 [node name="Sprite" type="Sprite" parent="."]
 modulate = Color( 1, 1, 1, 0.392157 )
