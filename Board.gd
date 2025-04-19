@@ -136,6 +136,12 @@ func _input(event):
 						
 						is_shape_comit = false
 						update_ghost(true)
+				KEY_X:
+					shape_rotate()
+					update_ghost(true)
+				KEY_Z:
+					shape_rotate(false)
+					update_ghost(true)
 #			update_ghost()
 		
 		else: # released
@@ -261,7 +267,7 @@ func update_next_que():
 		for i in range(shape_counter, shape_counter + next_limit):
 			var s = shape_scenes[shapes[i]].instance()
 			next_queue.append(s)
-			s.position = next_que_poses[next_pos_count].global_position
+			s.position = next_que_poses[next_pos_count].position
 			next_pos_count += 1
 			
 			add_child(s)
@@ -282,7 +288,7 @@ func update_next_que():
 		
 		for i in range(next_limit):
 			if i < next_queue.size():
-				next_queue[i].position = next_que_poses[i].global_position
+				next_queue[i].position = next_que_poses[i].position
 
 
 # Sekli oyun tahtasina yerlestirdikten sonra
@@ -465,10 +471,10 @@ func shape_set_position(shape : TShape, new_pos : Vector2):
 	shape_current.position = map_to_world(shape_position)
 
 
-func shape_rotate():
+func shape_rotate(is_clockwise : bool = true):
 	# sekli cevir
 #	shape_current.rotate_shape(shape_index)
-	var rotated_matris : Array = shape_current.rotate_shape()
+	var rotated_matris : Array = shape_current.rotate_shape(is_clockwise)
 	var is_rotated : bool = false
 	var n = rotated_matris.size()
 	

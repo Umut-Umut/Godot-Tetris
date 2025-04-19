@@ -86,12 +86,13 @@ func set_shape(matris : Array):
 
 
 #func rotate_shape(shape : int):
-func rotate_shape() -> Array:
+#func rotate_shape() -> Array:
+func rotate_shape(clockwise: bool = true) -> Array:
 	var used_cells = get_used_cells()
 	var matris = []
 	var rotated = []
 	var cell_coord : Vector2 = Vector2(-1, -1)
-	
+
 	for y in range(n):
 		var temp = []
 		for x in range(n):
@@ -101,18 +102,59 @@ func rotate_shape() -> Array:
 					cell_coord = get_cell_autotile_coord(x, y)
 			else:
 				temp.append(-1)
-		
 		matris.append(temp)
-	
+
+	# Boş döndürülmüş matrisi hazırla
 	rotated = matris.duplicate(true)
 	for r in rotated:
 		r.fill(-1)
 	
 	for y in range(n):
 		for x in range(n):
-			rotated[x][n - y - 1] = matris[y][x]
-	
+			if clockwise: rotated[x][n - y - 1] = matris[y][x]
+			else: rotated[n - x - 1][y] = matris[y][x]
+			
+#	# Saat yönünde döndür
+#	if clockwise:
+#		for y in range(n):
+#			for x in range(n):
+#				rotated[x][n - y - 1] = matris[y][x]
+#	else:
+#		# Saat yönünün tersine döndür
+#		for y in range(n):
+#			for x in range(n):
+#				rotated[n - x - 1][y] = matris[y][x]
+
 	return rotated
+
+#	var used_cells = get_used_cells()
+#	var matris = []
+#	var rotated = []
+#	var cell_coord : Vector2 = Vector2(-1, -1)
+#
+#	for y in range(n):
+#		var temp = []
+#		for x in range(n):
+#			if Vector2(x, y) in used_cells:
+#				temp.append(get_cell(x, y))
+#				if cell_coord == Vector2(-1, -1):
+#					cell_coord = get_cell_autotile_coord(x, y)
+#			else:
+#				temp.append(-1)
+#
+#		matris.append(temp)
+#
+#	rotated = matris.duplicate(true)
+#	for r in rotated:
+#		r.fill(-1)
+#
+#	for y in range(n):
+#		for x in range(n):
+#			rotated[x][n - y - 1] = matris[y][x]
+#
+#	return rotated
+
+
 #	for y in range(n):
 #		for x in range(n):
 #			if rotated[y][x] > -1:
