@@ -13,7 +13,15 @@ onready var timer_lock = $LockDown
 onready var shape_scene = preload("res://Shape.tscn")
 #onready var denek = $Denek
 
-onready var shape_scenes = ["res://Shapes/ShapeI.tscn", "res://Shapes/ShapeJ.tscn", "res://Shapes/ShapeL.tscn", "res://Shapes/ShapeO.tscn", "res://Shapes/ShapeS.tscn", "res://Shapes/ShapeT.tscn", "res://Shapes/ShapeZ.tscn"]
+onready var shape_scenes = [
+#	"res://Shapes/ShapeI.tscn", 
+	"res://Shapes/ShapeJ.tscn", 
+#	"res://Shapes/ShapeL.tscn", 
+#	"res://Shapes/ShapeO.tscn", 
+#	"res://Shapes/ShapeS.tscn", 
+#	"res://Shapes/ShapeT.tscn", 
+#	"res://Shapes/ShapeZ.tscn"
+	]
 onready var shape_ghost = $TShapeGhost
 onready var hold_area : Position2D = $HoldArea
 
@@ -43,31 +51,31 @@ var shape_ghost_pos : Vector2 = shape_spawn_position
 
 
 const SRS_KICK_TABLE = [
-	# 0 -> 1 dönüşü için offsetler
-	[Vector2(-1, 0), Vector2(-1, 1), Vector2(0, -2), Vector2(-1, -2)],  
+	{ "cw": [Vector2(0, 0), Vector2(-1, 0), Vector2(-1, 1), Vector2(0, -2), Vector2(-1, -2)],
+	  "ccw": [Vector2(0, 0), Vector2(1, 0), Vector2(1, 1), Vector2(0, -2), Vector2(1, -2)] }, # 0 <-> 1
 
-	# 1 -> 2 dönüşü için offsetler
-	[Vector2(1, 0), Vector2(1, -1), Vector2(0, 2), Vector2(1, 2)],  
+	{ "cw": [Vector2(0, 0), Vector2(1, 0), Vector2(1, -1), Vector2(0, 2), Vector2(1, 2)],
+	  "ccw": [Vector2(0, 0), Vector2(1, 0), Vector2(1, -1), Vector2(0, 2), Vector2(1, 2)] }, # 1 <-> 2
 
-	# 2 -> 3 dönüşü için offsetler
-	[Vector2(1, 0), Vector2(1, 1), Vector2(0, -2), Vector2(1, -2)],  
+	{ "cw": [Vector2(0, 0), Vector2(1, 0), Vector2(1, 1), Vector2(0, -2), Vector2(1, -2)],
+	  "ccw": [Vector2(0, 0), Vector2(-1, 0), Vector2(-1, 1), Vector2(0, -2), Vector2(-1, -2)] }, # 2 <-> 3
 
-	# 3 -> 0 dönüşü için offsetler
-	[Vector2(-1, 0), Vector2(-1, -1), Vector2(0, 2), Vector2(-1, 2)]  
+	{ "cw": [Vector2(0, 0), Vector2(-1, 0), Vector2(-1, -1), Vector2(0, 2), Vector2(-1, 2)],
+	  "ccw": [Vector2(0, 0), Vector2(-1, 0), Vector2(-1, -1), Vector2(0, 2), Vector2(-1, 2)] } # 3 <-> 0
 ]
 
 const SRS_KICK_TABLE_I = [
-	# 0 -> 1 dönüşü için offsetler
-	[Vector2(-2, 0), Vector2(1, 0), Vector2(-2, -1), Vector2(1, 2)],  
+	{ "cw": [Vector2(0, 0), Vector2(-2, 0), Vector2(1, 0), Vector2(-2, -1), Vector2(1, 2)],
+	  "ccw": [Vector2(0, 0), Vector2(-1, 0), Vector2(2, 0), Vector2(-1, 2), Vector2(2, -1)] }, # 0 <-> 1
 
-	# 1 -> 2 dönüşü için offsetler
-	[Vector2(-1, 0), Vector2(2, 0), Vector2(-1, 2), Vector2(2, -1)],  
+	{ "cw": [Vector2(0, 0), Vector2(-1, 0), Vector2(2, 0), Vector2(-1, 2), Vector2(2, -1)],
+	  "ccw": [Vector2(0, 0), Vector2(2, 0), Vector2(-1, 0), Vector2(2, 1), Vector2(-1, -2)] }, # 1 <-> 2
 
-	# 2 -> 3 dönüşü için offsetler
-	[Vector2(2, 0), Vector2(-2, 0), Vector2(2, 1), Vector2(-2, -2)],  
+	{ "cw": [Vector2(0, 0), Vector2(2, 0), Vector2(-1, 0), Vector2(2, 1), Vector2(-1, -2)],
+	  "ccw": [Vector2(0, 0), Vector2(1, 0), Vector2(-2, 0), Vector2(1, -2), Vector2(-2, 1)] }, # 2 <-> 3
 
-	# 3 -> 0 dönüşü için offsetler
-	[Vector2(1, 0), Vector2(-2, 0), Vector2(1, -2), Vector2(-2, 1)]  
+	{ "cw": [Vector2(0, 0), Vector2(1, 0), Vector2(-2, 0), Vector2(1, -2), Vector2(-2, 1)],
+	  "ccw": [Vector2(0, 0), Vector2(-2, 0), Vector2(1, 0), Vector2(-2, -1), Vector2(1, 2)] } # 3 <-> 0
 ]
 
 
@@ -152,11 +160,9 @@ func _input(event):
 
 
 func hard_drop():
-	for i in range(HEIGHT):
-			# break olmadigindan dolayi gereksiz islem yapiliyor.
-		if shape_move(Vector2.DOWN):
-			shape_lock()
-			break
+	while not shape_move(Vector2.DOWN):
+		pass
+	shape_lock()
 
 
 func update_ghost(is_rotated : bool = false):
@@ -257,8 +263,8 @@ func update_next_que():
 	# Siniri astigi icin next_limit sabitlendiyse, isaretle ve surekli bakma.
 	if is_next_limit_fixed:
 		pass
-	elif next_limit > next_que_poses.size():
-		next_limit = next_que_poses.size()
+	elif next_limit > next_que_poses.size() or next_limit > shapes.size():
+		next_limit = min(next_que_poses.size(), shapes.size())
 		is_next_limit_fixed = true
 	
 	# Eger, next_queue bos ise siradaki sekilleri olustur ve ekle.
@@ -471,40 +477,66 @@ func shape_set_position(shape : TShape, new_pos : Vector2):
 	shape_current.position = map_to_world(shape_position)
 
 
-func shape_rotate(is_clockwise : bool = true):
-	# sekli cevir
-#	shape_current.rotate_shape(shape_index)
-	var rotated_matris : Array = shape_current.rotate_shape(is_clockwise)
-	var is_rotated : bool = false
-	var n = rotated_matris.size()
-	
-	var kick_table = SRS_KICK_TABLE[shape_current.state_rotation]
+#func shape_rotate(is_clockwise : bool = true):
+##	sekli cevir
+##	shape_current.rotate_shape(shape_index)
+#	var rotated_matris : Array = shape_current.rotate_shape(is_clockwise)
+#	var is_rotated : bool = false
+#	var n = rotated_matris.size()
+#
+#	var kick_table = SRS_KICK_TABLE[shape_current.state_rotation]
+#	if shape_current.is_I:
+#		kick_table = SRS_KICK_TABLE_I[shape_current.state_rotation]
+#
+#	if matris_is_collide(rotated_matris, shape_position):
+#		for kick in kick_table:
+#			if matris_is_collide(rotated_matris, shape_position + kick):
+#				pass
+#			else:
+#				is_rotated = true
+#				shape_move(kick, false, is_rotated)
+#				shape_current.set_shape(rotated_matris)
+#				break
+#	else:
+#		shape_current.set_shape(rotated_matris)
+#		is_rotated = true
+#
+#	# Kick table gecis durumu icin
+#	if is_rotated:
+#		shape_current.state_rotation += 1
+#		if shape_current.state_rotation == 4:
+#			shape_current.state_rotation = 0
+#
+#	# cevrilmis seklin hucrelerinde cakisma varsa
+#	# eski haline dondur
+##	if shape_is_collide(shape_current, shape_position, Vector2.ZERO, true):
+##		shape_current.rotate_reverse_shape(shape_index)
+
+func shape_rotate(is_clockwise: bool = true):
+	var rotated = shape_current.rotate_shape(is_clockwise)
+	var new_rotation = (shape_current.state_rotation + (1 if is_clockwise else -1)) % 4
+	if new_rotation < 0: new_rotation += 4
+
+	var rotated_success = false
+	var kick_table = SRS_KICK_TABLE
 	if shape_current.is_I:
-		kick_table = SRS_KICK_TABLE_I[shape_current.state_rotation]
-	
-	if matris_is_collide(rotated_matris, shape_position):
-		for kick in kick_table:
-			if matris_is_collide(rotated_matris, shape_position + kick):
-				pass
-			else:
-				is_rotated = true
-				shape_move(kick, false, is_rotated)
-				shape_current.set_shape(rotated_matris)
+		kick_table = SRS_KICK_TABLE_I
+
+	var kicks = kick_table[shape_current.state_rotation]["cw" if is_clockwise else "ccw"]
+
+	if matris_is_collide(rotated, shape_position):
+		for kick in kicks:
+			if not matris_is_collide(rotated, shape_position + kick):
+				shape_move(kick, false, true)
+				shape_current.set_shape(rotated)
+				shape_current.state_rotation = new_rotation
+				rotated_success = true
 				break
 	else:
-		shape_current.set_shape(rotated_matris)
-		is_rotated = true
-	
-	# Kick table gecis durumu icin
-	if is_rotated:
-		shape_current.state_rotation += 1
-		if shape_current.state_rotation == 4:
-			shape_current.state_rotation = 0
-	
-	# cevrilmis seklin hucrelerinde cakisma varsa
-	# eski haline dondur
-#	if shape_is_collide(shape_current, shape_position, Vector2.ZERO, true):
-#		shape_current.rotate_reverse_shape(shape_index)
+		shape_current.set_shape(rotated)
+		shape_current.state_rotation = new_rotation
+		rotated_success = true
+
 
 
 func shape_lock():
