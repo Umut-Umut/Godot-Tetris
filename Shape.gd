@@ -1,163 +1,69 @@
 class_name TShape
 extends TileMap
 
-
-export (int) var n = 3 
-
-
-enum TColor {
-	CYAN,
-	PURPLE,
-	YELLOW,
-	RED,
-	GREEN,
-	ORANGE,
-	BLUE,
-	GREY
-}
-
-enum SHAPE {
-	C,
-	L,
-	I,
-	#S,
-	#T
-}
+export (int) var n := 3
 
 
-var shapes : Dictionary = {
-	 SHAPE.C : {"color" : 1, "state" : 0, "rotations" : 1, "patterns" : [
-		[[0, 0], [0, 1], [1, 0], [1, 1]],
-		]},
-	SHAPE.L : {"color" : 3, "state" : 0, "rotations" : 3, "patterns" : [
-		[[0, 0], [0, 1], [0, 2], [1, 2]],
-		[[0, 2], [1, 2], [2, 2], [2, 1]],
-		[[2, 0], [2, 1], [2, 2], [1, 2]]
-		]},
-	SHAPE.I : {"color" : 2, "state" : 0, "rotations" : 2, "patterns" : [
-		[[0, 2], [1, 2], [2, 2], [3, 2]],
-		[[2, 0], [2, 1], [2, 2], [2, 3]]
-	]}
-}
-
-
-export (bool) var is_I = false
+export (bool) var is_I := false
+export (bool) var is_ghost := false
 var state_rotation : int = 0
 
 
 func _ready():
-	if find_node("ColorRect"):
-		if $ColorRect.visible:
-			$ColorRect.color = Color(randf(), randf(), randf(), 0.25)
+	if is_ghost:
+		return
+	if $ColorRect and $ColorRect.visible:
+		$ColorRect.color = Color(randf(), randf(), randf(), 0.25)
 
 
-#func set_shape(shape : int):
-#	clear()
-#
-#	var c : Vector2 = Vector2(shapes[shape]["color"], 0)
-#	for vector in shapes[shape]["patterns"][shapes[shape]["state"]]:
-#		set_cellv(Vector2(vector[0], vector[1]), 0, false, false, false, c)
-func set_shape(matris : Array):
-	var used_cells = get_used_cells()
+func set_shape(matris: Array) -> void:
+	var used_cells := get_used_cells()
 	if used_cells.empty():
 		return
-	
-	var first_cell : Vector2 = used_cells[0]
-	var cell_coord = get_cell_autotile_coord(first_cell.x, first_cell.y)
-	
+
+	var first_cell: Vector2 = used_cells[0]
+	var cell_coord := get_cell_autotile_coord(first_cell.x, first_cell.y)
+
 	for y in range(n):
 		for x in range(n):
 			if matris[y][x] > -1:
-				set_cell(x, y, 0, false, false, false , cell_coord)
+				set_cell(x, y, 0, false, false, false, cell_coord)
 			else:
 				set_cell(x, y, -1)
 
 
-#func rotate_reverse_shape(shape : int):
-#	var dshape = shapes[shape]
-#	var cstate = dshape["state"]
-#	if cstate > 0:
-#		cstate -= 1
-#	else:
-#		cstate = dshape["rotations"] - 1
-#
-#	dshape["state"] = cstate
-#	set_shape(shape)
-
-
-#func rotate_shape(shape : int):
-#func rotate_shape() -> Array:
 func rotate_shape(clockwise: bool = true) -> Array:
-	var used_cells = get_used_cells()
-	var matris = []
-	var rotated = []
-	var cell_coord : Vector2 = Vector2(-1, -1)
+	var used_cells := get_used_cells()
+	var matris: Array = []
+	var cell_coord := Vector2(-1, -1)
 
 	for y in range(n):
-		var temp = []
+		var row: Array = []
 		for x in range(n):
 			if Vector2(x, y) in used_cells:
-				temp.append(get_cell(x, y))
+				row.append(get_cell(x, y))
 				if cell_coord == Vector2(-1, -1):
 					cell_coord = get_cell_autotile_coord(x, y)
 			else:
-				temp.append(-1)
-		matris.append(temp)
+				row.append(-1)
+		matris.append(row)
 
-	# Boş döndürülmüş matrisi hazırla
-	rotated = matris.duplicate(true)
-	for r in rotated:
-		r.fill(-1)
-	
+	var rotated := []
 	for y in range(n):
+		var row: Array = []
 		for x in range(n):
-			if clockwise: rotated[x][n - y - 1] = matris[y][x]
-			else: rotated[n - x - 1][y] = matris[y][x]
-			
-#	# Saat yönünde döndür
-#	if clockwise:
-#		for y in range(n):
-#			for x in range(n):
-#				rotated[x][n - y - 1] = matris[y][x]
-#	else:
-#		# Saat yönünün tersine döndür
-#		for y in range(n):
-#			for x in range(n):
-#				rotated[n - x - 1][y] = matris[y][x]
+			row.append(-1)
+		rotated.append(row)
+
+	# Saat yönü (clockwise) döndürme
+	if clockwise:
+		for y in range(n):
+			for x in range(n):
+				rotated[x][n - 1 - y] = matris[y][x]
+	else:
+		# Saat yönü tersi (counter-clockwise)
+		for y in range(n):
+			for x in range(n):
+				rotated[n - 1 - x][y] = matris[y][x]
 
 	return rotated
-
-#	var used_cells = get_used_cells()
-#	var matris = []
-#	var rotated = []
-#	var cell_coord : Vector2 = Vector2(-1, -1)
-#
-#	for y in range(n):
-#		var temp = []
-#		for x in range(n):
-#			if Vector2(x, y) in used_cells:
-#				temp.append(get_cell(x, y))
-#				if cell_coord == Vector2(-1, -1):
-#					cell_coord = get_cell_autotile_coord(x, y)
-#			else:
-#				temp.append(-1)
-#
-#		matris.append(temp)
-#
-#	rotated = matris.duplicate(true)
-#	for r in rotated:
-#		r.fill(-1)
-#
-#	for y in range(n):
-#		for x in range(n):
-#			rotated[x][n - y - 1] = matris[y][x]
-#
-#	return rotated
-
-
-#	for y in range(n):
-#		for x in range(n):
-#			if rotated[y][x] > -1:
-#				set_cell(x, y, 0, false, false, false , cell_coord)
-#			else:
-#				set_cell(x, y, -1)

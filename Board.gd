@@ -102,6 +102,17 @@ var is_down : bool = false
 func _input(event):
 	if event is InputEventKey:
 		if event.pressed:
+			if not event.is_echo():
+				match event.scancode:
+					KEY_UP:
+						shape_rotate()
+						update_ghost(true)
+					KEY_X:
+						shape_rotate()
+						update_ghost(true)
+					KEY_Z:
+						shape_rotate(false)
+						update_ghost(true)
 			match event.scancode:
 				KEY_DOWN:
 					timer_fall.wait_time = 0.025
@@ -117,9 +128,6 @@ func _input(event):
 					shape_direction = Vector2.LEFT
 					shape_move(shape_direction)
 					update_ghost()
-				KEY_UP:
-					shape_rotate()
-					update_ghost(true)
 				KEY_SPACE:
 					if not event.echo:
 						hard_drop()
@@ -144,12 +152,6 @@ func _input(event):
 						
 						is_shape_comit = false
 						update_ghost(true)
-				KEY_X:
-					shape_rotate()
-					update_ghost(true)
-				KEY_Z:
-					shape_rotate(false)
-					update_ghost(true)
 #			update_ghost()
 		
 		else: # released

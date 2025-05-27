@@ -45,6 +45,7 @@ tile_set = SubResource( 2 )
 cell_size = Vector2( 32, 32 )
 format = 1
 script = ExtResource( 3 )
+is_ghost = true
 
 [node name="NextQuePoses" type="Node2D" parent="."]
 
