@@ -14,13 +14,13 @@ onready var shape_scene = preload("res://Shape.tscn")
 #onready var denek = $Denek
 
 onready var shape_scenes = [
-#	"res://Shapes/ShapeI.tscn", 
+	"res://Shapes/ShapeI.tscn", 
 	"res://Shapes/ShapeJ.tscn", 
-#	"res://Shapes/ShapeL.tscn", 
-#	"res://Shapes/ShapeO.tscn", 
-#	"res://Shapes/ShapeS.tscn", 
-#	"res://Shapes/ShapeT.tscn", 
-#	"res://Shapes/ShapeZ.tscn"
+	"res://Shapes/ShapeL.tscn", 
+	"res://Shapes/ShapeO.tscn", 
+	"res://Shapes/ShapeS.tscn", 
+	"res://Shapes/ShapeT.tscn", 
+	"res://Shapes/ShapeZ.tscn"
 	]
 onready var shape_ghost = $TShapeGhost
 onready var hold_area : Position2D = $HoldArea

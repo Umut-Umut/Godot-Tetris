@@ -1,12 +1,10 @@
 extends Node2D
 
 
-# Declare member variables here. Examples:
-# var a = 2
-# var b = "text"
+onready var gui : GUI = get_node("CanvasLayer/GUI")
+onready var scene_board : PackedScene = preload("res://Board.tscn")
 
 
-# Called when the node enters the scene tree for the first time.
 func _ready():
 	get_tree().paused = true
 
@@ -18,6 +16,14 @@ func _input(event):
 				get_tree().paused = not get_tree().paused
 
 
-# Called every frame. 'delta' is the elapsed time since the previous frame.
-#func _process(delta):
-#	pass
+func game_init():
+	var board : Board = scene_board.instance()
+	add_child(board)
+	
+	get_tree().paused = false
+	
+	gui.hide()
+
+
+func _on_GUI_start_pressed():
+	game_init()
