@@ -86,14 +86,6 @@ texture = ExtResource( 5 )
 centered = false
 offset = Vector2( 32, 32 )
 
-[node name="Label" type="Label" parent="."]
-margin_left = -144.0
-margin_top = 144.0
-margin_bottom = 704.0
-text = "SCORES"
-align = 1
-valign = 1
-
 [node name="GridIndexes" type="Node2D" parent="."]
 script = ExtResource( 6 )
 

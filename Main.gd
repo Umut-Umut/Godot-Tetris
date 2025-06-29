@@ -7,6 +7,8 @@ onready var scene_board : PackedScene = preload("res://Board.tscn")
 
 func _ready():
 	get_tree().paused = true
+	
+	$BoardTemp.queue_free()
 
 
 func _input(event):
@@ -22,7 +24,7 @@ func game_init():
 	
 	get_tree().paused = false
 	
-	gui.hide()
+#	gui.hide()
 
 
 func _on_GUI_start_pressed():
