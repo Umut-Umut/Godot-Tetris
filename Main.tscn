@@ -1,8 +1,11 @@
-[gd_scene load_steps=4 format=2]
+[gd_scene load_steps=5 format=2]
 
 [ext_resource path="res://Board.tscn" type="PackedScene" id=1]
 [ext_resource path="res://GUI/GUI.tscn" type="PackedScene" id=2]
 [ext_resource path="res://Main.gd" type="Script" id=3]
+
+[sub_resource type="StyleBoxFlat" id=1]
+bg_color = Color( 0, 0, 0, 0.588235 )
 
 [node name="Main" type="Node2D"]
 pause_mode = 2
@@ -14,6 +17,11 @@ script = ExtResource( 3 )
 pause_mode = 2
 
 [node name="GUI" parent="CanvasLayer" instance=ExtResource( 2 )]
+
+[node name="Panel" type="Panel" parent="CanvasLayer/GUI/MainMenu" index="0"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+custom_styles/panel = SubResource( 1 )
 
 [connection signal="start_pressed" from="CanvasLayer/GUI" to="." method="_on_GUI_start_pressed"]
 [connection signal="pressed" from="CanvasLayer/GUI/GameMenu/Back" to="CanvasLayer/GUI" method="_on_Back_pressed"]

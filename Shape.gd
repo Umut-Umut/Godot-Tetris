@@ -8,12 +8,30 @@ export (bool) var is_I := false
 export (bool) var is_ghost := false
 var state_rotation : int = 0
 
+var default_matris : Array = []
+
 
 func _ready():
 	if is_ghost:
 		return
 	if $ColorRect and $ColorRect.visible:
 		$ColorRect.color = Color(randf(), randf(), randf(), 0.25)
+
+
+func _enter_tree():
+	# initializing default matris
+	var used_cells = get_used_cells()
+	if used_cells.empty():
+		return
+	
+	for i in range(n):
+		var row = []
+		for k in range(n):
+			row.append(-1)
+		default_matris.append(row)
+	
+	for cell in used_cells:
+		default_matris[cell.y][cell.x] = 0
 
 
 func set_shape(matris: Array) -> void:
@@ -30,6 +48,13 @@ func set_shape(matris: Array) -> void:
 				set_cell(x, y, 0, false, false, false, cell_coord)
 			else:
 				set_cell(x, y, -1)
+
+
+func set_default():
+	if default_matris.empty():
+		return
+	
+	set_shape(default_matris)
 
 
 func rotate_shape(clockwise: bool = true) -> Array:

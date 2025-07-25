@@ -13,6 +13,7 @@ onready var timer_lock = $LockDown
 onready var shape_scene = preload("res://Shape.tscn")
 #onready var denek = $Denek
 
+# PackedScenes will load in _ready
 onready var shape_scenes = [
 	"res://Shapes/ShapeI.tscn", 
 	"res://Shapes/ShapeJ.tscn", 
@@ -25,8 +26,9 @@ onready var shape_scenes = [
 onready var shape_ghost = $TShapeGhost
 onready var hold_area : Position2D = $HoldArea
 
+# Permutated index of shape_scenes
 var shapes : Array = []
-# Bir sonraki permütasyonu tutuyor.
+# Next permutation of shapes
 var shapes_next : Array = []
 var shape_counter : int = 0
 var shape_current : TShape = null
@@ -87,8 +89,11 @@ func _ready():
 	randomize()
 	
 	for i in range(shape_scenes.size()):
+		
 		shape_scenes[i] = load(shape_scenes[i])
+		# Index of Packs
 		shapes.append(i)
+		# Copy of shapes
 		shapes_next.append(i)
 	
 	shapes.shuffle()
@@ -142,10 +147,12 @@ func _input(event):
 						if temp:
 							shape_hold = temp
 							shape_hold.position = hold_area.position
+							shape_hold.set_default()
 						else:
 							shape_current.position = hold_area.position
 							shape_hold = shape_current
 							shape_spawn()
+							
 #						shape_hold = shape_scenes[shape_index].instance()
 #						add_child(shape_hold)
 #						shape_hold.position = hold_area.position

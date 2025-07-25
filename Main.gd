@@ -5,6 +5,9 @@ onready var gui : GUI = get_node("CanvasLayer/GUI")
 onready var scene_board : PackedScene = preload("res://Board.tscn")
 
 
+var is_game_init : bool = false
+
+
 func _ready():
 	get_tree().paused = true
 	
@@ -24,8 +27,11 @@ func game_init():
 	
 	get_tree().paused = false
 	
-#	gui.hide()
+	is_game_init = true
 
 
 func _on_GUI_start_pressed():
+	if is_game_init:
+		return
 	game_init()
+

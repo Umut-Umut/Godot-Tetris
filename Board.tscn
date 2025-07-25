@@ -24,6 +24,7 @@
 0/z_index = 0
 
 [node name="Board" type="TileMap"]
+pause_mode = 1
 position = Vector2( 144, 0 )
 tile_set = ExtResource( 4 )
 cell_size = Vector2( 32, 32 )
